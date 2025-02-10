@@ -16,7 +16,7 @@ function dailytechtask
     % Extract all <item> nodes in the channel
     items = channel.getElementsByTagName('item');
     numItems = items.getLength();
-
+    titles = [];
     % Loop through each item, scrape the article
     for i = 0:(numItems-1)
         itemNode = items.item(i);
@@ -24,7 +24,13 @@ function dailytechtask
         % Optionally display progress
         fprintf('Scraped: %s\n', title);
         fprintf('Link: %s\n',link);
+        titles = [titles, title]; 
     end
+    alertApiKey = getenv("THINGSPEAK_API_KEY");
+    subject = "Techcrunch "+ dateStr;
+    body = strjoin(titles, newline);
+    body = extractBefore(body, 255);
+    sendEmail(alertApiKey,subject,body)
 end
 
 function channel = rssFeed(url, episode, dateStr)
@@ -62,12 +68,12 @@ function [title, link, textData] = scrapeArticle(itemNode, episode)
     %       ...
 
     % Extract title text from <title> node
-    title = char(itemNode.getElementsByTagName('title').item(0).getFirstChild.getData());
+    title = string(itemNode.getElementsByTagName('title').item(0).getFirstChild.getData());
     % Replace forbidden characters with '-'
     title = regexprep(title, '[<>:"/\\|?*]', '-');
 
     % Extract link text from <link> node
-    link = char(itemNode.getElementsByTagName('link').item(0).getFirstChild.getData());
+    link = string(itemNode.getElementsByTagName('link').item(0).getFirstChild.getData());
 
     % Fetch HTML of the article
     html = webread(link);
@@ -107,4 +113,12 @@ function doc = parseXMLString(xmlString)
 
     doc = xmlread(tempFile);  % Parse the file as XML Document Object
     delete(tempFile);
+end
+
+
+function sendEmail(alertApiKey,subject,body)
+    % Provide the ThingSpeak alerts API key.  All alerts API keys start with TAK.    
+    % webwrite uses weboptions to add required headers.  Alerts needs a ThingSpeak-Alerts-API-Key header.
+    options = weboptions("HeaderFields", ["ThingSpeak-Alerts-API-Key", alertApiKey ]);
+    webwrite("https://api.thingspeak.com/alerts/send", "body", body, "subject", subject, options);
 end

@@ -26,6 +26,7 @@ jobs:
         with:
           name: podcast
           path: podcast/tech_[0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9]/
-# env:
+env:
+  THINGSPEAK_API_KEY: ${{secrets.THINGSPEAK_API_KEY}}
 #   OPENAI_API_KEY: ${{secrets.OPENAI_API_KEY}}
 #   ELEVEN_API_KEY: ${{secrets.ELEVEN_API_KEY}}
