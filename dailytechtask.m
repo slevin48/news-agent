@@ -49,7 +49,14 @@ function channel = rssFeed(url, episode, dateStr)
 
     % Get the <channel> element
     channel = doc.getElementsByTagName('channel').item(0);
-    rssFile = fullfile("podcast", episode, "rss_" + dateStr + ".xml");
+    
+    % Save the entire RSS feed to a file
+    rssFolder = fullfile("podcast", episode, "rss");
+    if ~exist(rssFolder, 'dir')
+        mkdir(rssFolder);
+    end
+
+    rssFile = fullfile(rssFolder, "rss_" + dateStr + ".xml");
     fid = fopen(rssFile, 'w');
     fwrite(fid, response);
     fclose(fid);
