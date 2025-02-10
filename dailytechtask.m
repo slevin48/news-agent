@@ -9,8 +9,7 @@ function dailytechtask
     % dateStr = datestr(now, 'yyyy-mm-dd');  % "YYYY-MM-DD"
     dt = datetime('now','Format','yyyy-MM-dd');
     dateStr = string(dt);
-    % episode = "tech_" + dateStr;
-    episode = "nyt_" + dateStr;
+    episode = "tech_" + dateStr;
 
     % Get the RSS channel
     channel = rssFeed(url, episode, dateStr);
@@ -49,7 +48,7 @@ function channel = rssFeed(url, episode, dateStr)
 
     % Get the <channel> element
     channel = doc.getElementsByTagName('channel').item(0);
-    
+
     % Save the entire RSS feed to a file
     rssFolder = fullfile("podcast", episode, "rss");
     if ~exist(rssFolder, 'dir')
