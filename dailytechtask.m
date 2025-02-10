@@ -4,11 +4,13 @@ function dailytechtask
     % date = datetime.datetime.now().strftime("%Y-%m-%d")
     % episode = f"tech_{date}"
 
-    url = "https://techcrunch.com/feed";
+    // url = "https://techcrunch.com/feed";
+    url = "https://rss.nytimes.com/services/xml/rss/nyt/Technology.xml";
     % dateStr = datestr(now, 'yyyy-mm-dd');  % "YYYY-MM-DD"
     dt = datetime('now','Format','yyyy-MM-dd');
     dateStr = string(dt);
-    episode = "tech_" + dateStr;
+    // episode = "tech_" + dateStr;
+    episode = "nyt_" + dateStr;
 
     % Get the RSS channel
     channel = rssFeed(url, episode, dateStr);
@@ -27,7 +29,7 @@ function dailytechtask
         titles = [titles, title]; 
     end
     alertApiKey = getenv("THINGSPEAK_API_KEY");
-    subject = "Techcrunch "+ dateStr;
+    subject = "Daily News "+ dateStr;
     body = strjoin(titles, newline);
     body = extractBefore(body, 255);
     sendEmail(alertApiKey,subject,body)
@@ -47,14 +49,7 @@ function channel = rssFeed(url, episode, dateStr)
 
     % Get the <channel> element
     channel = doc.getElementsByTagName('channel').item(0);
-
-    % Save the entire RSS feed to a file
-    rssFolder = fullfile("podcast", episode, "rss");
-    if ~exist(rssFolder, 'dir')
-        mkdir(rssFolder);
-    end
-
-    rssFile = fullfile(rssFolder, "techcrunch_" + dateStr + ".xml");
+    rssFile = fullfile("podcast", episode, "rss_" + dateStr + ".xml");
     fid = fopen(rssFile, 'w');
     fwrite(fid, response);
     fclose(fid);
@@ -81,10 +76,17 @@ function [title, link, textData] = scrapeArticle(itemNode, episode)
     % In MATLAB R2021b or later, you can parse HTML with htmlTree
     tree = htmlTree(html);
 
-    % Find elements whose class="entry-content"
-    % entryContent = findElement(tree, 'class', 'entry-content');
-    entryContent = findElement(tree, '.entry-content');
-
+    % Find core of the article
+    if contains(link, "techcrunch", 'IgnoreCase', true)
+        % TechCrunch articles typically use the '.entry-content' class
+        entryContent = findElement(tree, '.entry-content');
+    elseif contains(link, "nytimes", 'IgnoreCase', true)
+        % NYTimes articles may have the article body within a <section> with name="articleBody"
+        entryContent = findElement(tree, 'section[name="articleBody"]');
+    else
+        % Optionally, add a default extraction or handle unknown sources here
+        entryContent = [];
+    end
     if ~isempty(entryContent)
         % Extract readable text
         textData = extractHTMLText(entryContent(1));
@@ -103,6 +105,7 @@ function [title, link, textData] = scrapeArticle(itemNode, episode)
     fwrite(fid, textData, 'char');
     fclose(fid);
 end
+
 
 function doc = parseXMLString(xmlString)
     % Helper to parse XML from string in MATLAB
