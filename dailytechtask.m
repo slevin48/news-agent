@@ -4,12 +4,12 @@ function dailytechtask
     % date = datetime.datetime.now().strftime("%Y-%m-%d")
     % episode = f"tech_{date}"
 
-    // url = "https://techcrunch.com/feed";
+    % url = "https://techcrunch.com/feed";
     url = "https://rss.nytimes.com/services/xml/rss/nyt/Technology.xml";
     % dateStr = datestr(now, 'yyyy-mm-dd');  % "YYYY-MM-DD"
     dt = datetime('now','Format','yyyy-MM-dd');
     dateStr = string(dt);
-    // episode = "tech_" + dateStr;
+    % episode = "tech_" + dateStr;
     episode = "nyt_" + dateStr;
 
     % Get the RSS channel
